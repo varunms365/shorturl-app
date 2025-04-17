@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Simple JavaScript URL Shortener</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; }
+    input[type="text"] { width: 400px; padding: 8px; }
+    input[type="submit"] { padding: 8px 16px; }
+    .result { margin-top: 20px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h2>Simple URL Shortener</h2>
+  <form id="shortenForm">
+    <label for="longUrl">Enter Long URL:</label><br>
+    <input type="text" id="longUrl" required placeholder="https://example.com/very/long/url" value="https://app.powerbigov.us/groups/106cb914-5301-4a51-aad3-1dafa69a36a4/reports/910ece33-f6d6-46e6-ba7b-64d8de5f6194/de8e94c7981e4ae696a8"><br><br>
+    <label for="customCode">Custom Short Name (optional):</label><br>
+    <input type="text" id="customCode" placeholder="e.g. mylink" value="go/ITContracts"><br><br>
+    <input type="submit" value="Shorten URL">
+  </form>
+  <div class="result" id="result"></div>
+
+  <script>
+    // In-memory storage for short URL mappings
+    const urlMap = {};
+
+    function generateCode(longUrl) {
+      // Basic code generator: last 4 alphanumeric chars of URL
+      return longUrl.replace(/[^a-zA-Z0-9]/g, '').slice(-4);
+    }
+
+    document.getElementById('shortenForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const longUrl = document.getElementById('longUrl').value.trim();
+      let customCode = document.getElementById('customCode').value.trim();
+
+      let code = customCode ? customCode : generateCode(longUrl);
+
+      // Ensure code is not empty and not already used
+      if (!code) {
+        document.getElementById('result').textContent = 'Custom code cannot be empty.';
+        return;
+      }
+      if (urlMap[code] && urlMap[code] !== longUrl) {
+        document.getElementById('result').textContent = 'This custom code is already taken!';
+        return;
+      }
+
+      urlMap[code] = longUrl;
+      const shortUrl = `${location.origin}/#/${code}`;
+      document.getElementById('result').innerHTML = `Short URL: <a href="${shortUrl}" target="_blank">${shortUrl}</a>`;
+    });
+
+    // Optional: Redirect if visiting a short URL
+    window.addEventListener('DOMContentLoaded', () => {
+      const hash = location.hash;
+      if (hash.startsWith('#/')) {
+        const code = hash.slice(2);
+        if (urlMap[code]) {
+          window.location.href = urlMap[code];
+        }
+      }
+    });
+  </script>
+</body>
+</html>
